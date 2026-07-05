@@ -1,0 +1,8 @@
+export * from "./types"
+export { computeCoverage } from "./coverage"
+export { detectOverlaps } from "./overlap"
+export { computeTagScores } from "./taste-profile"
+export { computeFitScore } from "./fit-score"
+export { sameOverlapProfile } from "./shared"
+export { buildAdvisorContext, toRuleWatch } from "./context"
+export type { AdvisorContext, DerivedTasteProfile } from "./context"

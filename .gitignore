@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project-specific
+.claude
+.playwright-mcp
+docs
+PROGRESS.md
+drizzle/meta/

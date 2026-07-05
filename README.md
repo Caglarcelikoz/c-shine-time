@@ -1,4 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# C-Shine Time
+
+Manage your collection. Plan your next watch.
+
+C-Shine Time is a product of [C-Shine Digital](https://cshinedigital.com).
+
+## Getting Started
 
 ## Getting Started
 
