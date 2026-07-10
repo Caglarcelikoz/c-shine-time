@@ -126,21 +126,21 @@ export function WatchForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <Label htmlFor="brand" className={fieldLabel}>{t("brand")} *</Label>
-            <Input id="brand" name="brand" defaultValue={w?.brand ?? ""} placeholder="Tudor" className={inputCls} />
+            <Input id="brand" name="brand" defaultValue={w?.brand ?? ""} className={inputCls} />
             <FieldError errors={errors.brand} />
           </div>
           <div>
             <Label htmlFor="model" className={fieldLabel}>{t("model")} *</Label>
-            <Input id="model" name="model" defaultValue={w?.model ?? ""} placeholder="Black Bay 54" className={inputCls} />
+            <Input id="model" name="model" defaultValue={w?.model ?? ""} className={inputCls} />
             <FieldError errors={errors.model} />
           </div>
           <div>
             <Label htmlFor="reference" className={fieldLabel}>{t("reference")}</Label>
-            <Input id="reference" name="reference" defaultValue={w?.reference ?? ""} placeholder="M79000N" className={inputCls} />
+            <Input id="reference" name="reference" defaultValue={w?.reference ?? ""} className={inputCls} />
           </div>
           <div>
             <Label htmlFor="year" className={fieldLabel}>{t("year")}</Label>
-            <Input id="year" name="year" type="number" defaultValue={w?.year ?? ""} placeholder="2023" className={inputCls} />
+            <Input id="year" name="year" type="number" defaultValue={w?.year ?? ""} className={inputCls} />
             <FieldError errors={errors.year} />
           </div>
           <div className="sm:col-span-2">
@@ -159,17 +159,17 @@ export function WatchForm({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div>
             <Label htmlFor="caseSize" className={fieldLabel}>{t("caseSize")}</Label>
-            <Input id="caseSize" name="caseSize" type="number" step="0.1" defaultValue={fmtNum(w?.caseSize)} placeholder="37" className={inputCls} />
+            <Input id="caseSize" name="caseSize" type="number" step="0.1" defaultValue={fmtNum(w?.caseSize)} className={inputCls} />
             <FieldError errors={errors.caseSize} />
           </div>
           <div>
             <Label htmlFor="thickness" className={fieldLabel}>{t("thickness")}</Label>
-            <Input id="thickness" name="thickness" type="number" step="0.1" defaultValue={fmtNum(w?.thickness)} placeholder="11.2" className={inputCls} />
+            <Input id="thickness" name="thickness" type="number" step="0.1" defaultValue={fmtNum(w?.thickness)} className={inputCls} />
             <FieldError errors={errors.thickness} />
           </div>
           <div>
             <Label htmlFor="lugToLug" className={fieldLabel}>{t("lugToLug")}</Label>
-            <Input id="lugToLug" name="lugToLug" type="number" step="0.1" defaultValue={fmtNum(w?.lugToLug)} placeholder="44" className={inputCls} />
+            <Input id="lugToLug" name="lugToLug" type="number" step="0.1" defaultValue={fmtNum(w?.lugToLug)} className={inputCls} />
             <FieldError errors={errors.lugToLug} />
           </div>
           <div>
@@ -180,7 +180,6 @@ export function WatchForm({
                 name="movementType"
                 list="movement-options"
                 defaultValue={w?.movementType ?? ""}
-                placeholder="Automatic"
                 className={`${inputCls} pr-8`}
               />
               <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -194,7 +193,7 @@ export function WatchForm({
           </div>
           <div>
             <Label htmlFor="dialColor" className={fieldLabel}>{t("dialColor")}</Label>
-            <Input id="dialColor" name="dialColor" defaultValue={w?.dialColor ?? ""} placeholder="Black" className={inputCls} />
+            <Input id="dialColor" name="dialColor" defaultValue={w?.dialColor ?? ""} className={inputCls} />
             <p className="text-xs text-muted-foreground mt-1">{t("dialColorHint")}</p>
           </div>
           <div>
@@ -212,7 +211,7 @@ export function WatchForm({
           </div>
           <div>
             <Label htmlFor="waterResistance" className={fieldLabel}>{t("waterResistance")}</Label>
-            <Input id="waterResistance" name="waterResistance" type="number" defaultValue={w?.waterResistance ?? ""} placeholder="200" className={inputCls} />
+            <Input id="waterResistance" name="waterResistance" type="number" defaultValue={w?.waterResistance ?? ""} className={inputCls} />
             <FieldError errors={errors.waterResistance} />
           </div>
         </div>
@@ -319,7 +318,7 @@ export function WatchForm({
             </div>
             <div>
               <Label htmlFor="targetPrice" className={fieldLabel}>{t("targetPrice")}</Label>
-              <Input id="targetPrice" name="targetPrice" type="number" step="0.01" defaultValue={fmtNum(uw?.targetPrice)} placeholder="3050" className={inputCls} />
+              <Input id="targetPrice" name="targetPrice" type="number" step="0.01" defaultValue={fmtNum(uw?.targetPrice)} className={inputCls} />
               <FieldError errors={errors.targetPrice} />
             </div>
           </div>
@@ -398,7 +397,7 @@ export function WatchForm({
             <div className="hidden sm:block" aria-hidden />
             <div>
               <Label htmlFor="purchasePrice" className={fieldLabel}>{t("purchasePrice")}</Label>
-              <Input id="purchasePrice" name="purchasePrice" type="number" step="0.01" defaultValue={fmtNum(uw?.purchasePrice)} placeholder="4275" className={inputCls} />
+              <Input id="purchasePrice" name="purchasePrice" type="number" step="0.01" defaultValue={fmtNum(uw?.purchasePrice)} className={inputCls} />
               <FieldError errors={errors.purchasePrice} />
             </div>
             <div>
@@ -407,7 +406,7 @@ export function WatchForm({
             </div>
             <div>
               <Label htmlFor="marketValueEstimate" className={fieldLabel}>{t("marketValueEstimate")}</Label>
-              <Input id="marketValueEstimate" name="marketValueEstimate" type="number" step="0.01" defaultValue={fmtNum(uw?.marketValueEstimate)} placeholder="4500" className={inputCls} />
+              <Input id="marketValueEstimate" name="marketValueEstimate" type="number" step="0.01" defaultValue={fmtNum(uw?.marketValueEstimate)} className={inputCls} />
               <FieldError errors={errors.marketValueEstimate} />
             </div>
             <div>
