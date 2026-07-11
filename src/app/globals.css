@@ -97,11 +97,19 @@
   }
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--foreground);
-    box-shadow: inset 0 0 0 1000px var(--card);
-    transition: background-color 600000s 0s, color 600000s 0s;
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  input:autofill {
+    /* Chrome/Safari force a light background + dark text on autofilled
+       inputs. Mask the background with a large inset shadow and re-fill
+       the text to our foreground color so it matches the dark theme. */
+    -webkit-text-fill-color: var(--foreground) !important;
+    -webkit-box-shadow: inset 0 0 0 1000px var(--card) !important;
+    box-shadow: inset 0 0 0 1000px var(--card) !important;
     caret-color: var(--foreground);
+    border-color: var(--border);
+    /* Defeat the autofill-yellow background animation. */
+    transition: background-color 600000s 0s, color 600000s 0s;
   }
 }
 
