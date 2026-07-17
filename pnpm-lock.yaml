@@ -32,6 +32,9 @@ dependencies:
   drizzle-orm:
     specifier: ^0.45.2
     version: 0.45.2(@neondatabase/serverless@1.1.0)
+  heic-to:
+    specifier: ^1.5.2
+    version: 1.5.2
   lucide-react:
     specifier: ^1.22.0
     version: 1.22.0(react@19.2.4)
@@ -5004,6 +5007,10 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       function-bind: 1.1.2
+
+  /heic-to@1.5.2:
+    resolution: {integrity: sha512-8Fns+lZHAWmz5U5IUxDeXKwIf3foBoKNPLxxFY4B0MkLjNuomEIHCoDbDE+x/llFK3NCEO1cu4+n3iUKY+Svmw==}
+    dev: false
 
   /hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}

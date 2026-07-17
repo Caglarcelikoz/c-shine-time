@@ -167,7 +167,6 @@ export function AddWatchFlow({
             ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/heic"
-            capture="environment"
             multiple
             className="sr-only"
             onChange={(e) => addPhotos(e.target.files)}
