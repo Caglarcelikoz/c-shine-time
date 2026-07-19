@@ -57,7 +57,7 @@ export default async function WatchDetailPage({
           >
             {t("edit")}
           </Link>
-          <DeleteWatchButton id={item.id} />
+          <DeleteWatchButton id={item.id} watchName={`${w.brand} ${w.model}`} />
         </div>
       </div>
 

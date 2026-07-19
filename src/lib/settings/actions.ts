@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { and, eq, ne } from "drizzle-orm"
 import { z } from "zod"
 import { db } from "@/lib/db"
-import { users } from "@/lib/db/schema"
+import { users, userWatches } from "@/lib/db/schema"
 import { requireUser } from "@/lib/auth/session"
 import type { ActionState } from "@/lib/definitions"
 import { PROFILE_THEMES, type ProfileTheme } from "@/lib/profile/themes"
@@ -73,6 +73,33 @@ export async function updateProfileTheme(theme: ProfileTheme): Promise<void> {
   await db
     .update(users)
     .set({ profileTheme: theme, updatedAt: new Date() })
+    .where(eq(users.id, user.id))
+  revalidatePath("/settings")
+  revalidatePath(`/${user.username}`)
+}
+
+export async function updateFeaturedPiece(watchId: string | null): Promise<void> {
+  const user = await requireUser()
+
+  if (watchId !== null) {
+    const [candidate] = await db
+      .select({ id: userWatches.id })
+      .from(userWatches)
+      .where(
+        and(
+          eq(userWatches.id, watchId),
+          eq(userWatches.userId, user.id),
+          eq(userWatches.status, "owned"),
+          eq(userWatches.isPublic, true),
+        ),
+      )
+      .limit(1)
+    if (!candidate) return // not a valid own public owned watch — ignore
+  }
+
+  await db
+    .update(users)
+    .set({ featuredWatchId: watchId, updatedAt: new Date() })
     .where(eq(users.id, user.id))
   revalidatePath("/settings")
   revalidatePath(`/${user.username}`)

@@ -1,13 +1,14 @@
 import { Download } from "lucide-react"
-import { eq } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/navigation"
 import { requireUser } from "@/lib/auth/session"
 import { db } from "@/lib/db"
-import { users } from "@/lib/db/schema"
+import { users, userWatches } from "@/lib/db/schema"
 import { UsernameForm } from "@/components/settings/username-form"
 import { LockedRow, PrivacyToggle } from "@/components/settings/privacy-toggle"
 import { ThemePicker } from "@/components/settings/theme-picker"
+import { FeaturedPicker } from "@/components/settings/featured-picker"
 import type { ProfileTheme } from "@/lib/profile/themes"
 import { PROFILE_THEMES } from "@/lib/profile/themes"
 
@@ -15,6 +16,16 @@ export default async function SettingsPage() {
   const sessionUser = await requireUser()
   const [user] = await db.select().from(users).where(eq(users.id, sessionUser.id)).limit(1)
   const t = await getTranslations("Settings")
+
+  const featuredOptions = await db.query.userWatches.findMany({
+    where: and(
+      eq(userWatches.userId, user.id),
+      eq(userWatches.status, "owned"),
+      eq(userWatches.isPublic, true),
+    ),
+    orderBy: desc(userWatches.createdAt),
+    with: { watch: true },
+  })
 
   return (
     <div className="max-w-2xl space-y-10">
@@ -89,6 +100,28 @@ export default async function SettingsPage() {
               : "classic"
           }
         />
+      </div>
+
+      <div>
+        <h2 className="font-serif text-2xl mb-1">{t("featuredPiece")}</h2>
+        <p className="text-sm text-muted-foreground mt-2 mb-4">
+          {t("featuredPieceDesc")}
+        </p>
+        {featuredOptions.length > 0 ? (
+          <FeaturedPicker
+            initial={user.featuredWatchId}
+            options={featuredOptions.map((i) => ({
+              id: i.id,
+              brand: i.watch.brand,
+              model: i.watch.model,
+              imageUrl: i.watch.imageUrls?.[0] ?? null,
+            }))}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {t("featuredPieceEmpty")}
+          </p>
+        )}
       </div>
 
       <div>

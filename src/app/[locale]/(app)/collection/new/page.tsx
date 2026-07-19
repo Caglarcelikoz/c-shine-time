@@ -4,6 +4,13 @@ import { addWatch } from "@/lib/collection/actions"
 import { isImageStorageConfigured } from "@/lib/storage/r2"
 import { AddWatchFlow } from "@/components/collection/add-watch-flow"
 
+/**
+ * Photo import enriches specs via a catalog match then a ~15s web-search
+ * fallback; give the Server Action headroom above that so the platform never
+ * truncates before the app's own timeout fires.
+ */
+export const maxDuration = 30
+
 export default async function NewWatchPage() {
   const imageUploadEnabled = isImageStorageConfigured()
   const t = await getTranslations("CollectionNewPage")
@@ -26,7 +33,7 @@ export default async function NewWatchPage() {
       <AddWatchFlow
         action={addWatch}
         imageUploadEnabled={imageUploadEnabled}
-        photoCaptureEnabled={imageUploadEnabled && Boolean(process.env.OPENAI_API_KEY)}
+        aiImportEnabled={imageUploadEnabled && Boolean(process.env.OPENAI_API_KEY)}
       />
     </div>
   )

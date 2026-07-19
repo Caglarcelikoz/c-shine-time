@@ -17,7 +17,7 @@ export const users = pgTable("users", {
   hideWishlist: boolean("hide_wishlist").notNull().default(false),
   hideSoldArchive: boolean("hide_sold_archive").notNull().default(false),
   profileTheme: text("profile_theme").notNull().default("classic"),
-  /** ADR 0004 — setup checklist dismissal; steps themselves are derived. */
+  featuredWatchId: text("featured_watch_id"),
   onboardingDismissedAt: timestamp("onboarding_dismissed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

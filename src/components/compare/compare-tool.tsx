@@ -401,7 +401,13 @@ function ExternalForm({
     startImport(async () => {
       const res = await importWatchFromUrl(url)
       if (!res.ok || !res.watch) {
-        setError(res.error ?? t("couldntImport"))
+        setError(
+          res.errorCode === "blocked" ||
+            res.errorCode === "tls" ||
+            res.errorCode === "timeout"
+            ? t("couldntImportBlocked")
+            : t("couldntImport")
+        )
         return
       }
       const w = res.watch
