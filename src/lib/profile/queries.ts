@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { userWatches, users } from "@/lib/db/schema"
 import { computeTagScores, toRuleWatch } from "@/lib/rule-engine"
+import { resolveFeaturedPiece } from "./featured"
 import { formatMoney } from "@/lib/currency"
 import type { CollectionItem, OccasionTag, PrimaryStyle, TimeHorizon } from "@/lib/types"
 import type { TagScore } from "@/lib/rule-engine"
@@ -101,7 +102,15 @@ export async function getPublicProfile(rawUsername: string): Promise<PublicProfi
     with: { watch: true },
   })
 
-  const publicOwned = all.filter((i) => i.status === "owned" && i.isPublic)
+  // Newest-first so the "newest acquisition" fallback and the collection grid
+  // are deterministic (fixes the old undefined-order featured piece — ADR 0006).
+  const publicOwned = all
+    .filter((i) => i.status === "owned" && i.isPublic)
+    .sort(
+      (a, b) =>
+        b.createdAt.getTime() - a.createdAt.getTime() ||
+        a.id.localeCompare(b.id),
+    )
   const soldPublic = user.hideSoldArchive
     ? []
     : all.filter((i) => i.status === "sold" && i.isPublic)
@@ -137,7 +146,10 @@ export async function getPublicProfile(rawUsername: string): Promise<PublicProfi
       sold: soldPublic.length,
     },
     totalValue,
-    featured: publicOwned[0] ? toPublicWatch(publicOwned[0]) : null,
+    featured: (() => {
+      const item = resolveFeaturedPiece(user.featuredWatchId, publicOwned)
+      return item ? toPublicWatch(item) : null
+    })(),
     watches: publicOwned.map(toPublicWatch),
     wishlist: wishlist.map((i) => ({
       id: i.id,

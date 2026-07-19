@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { getLocale } from "next-intl/server"
 import { authOptions } from "@/lib/auth/config"
 import { AppNav } from "@/components/nav/app-nav"
+import { Toaster } from "@/components/ui/sonner"
 import { redirect } from "@/i18n/navigation"
 
 export default async function AppLayout({
@@ -22,6 +23,7 @@ export default async function AppLayout({
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-6 py-10">
         {children}
       </main>
+      <Toaster />
     </div>
   )
 }

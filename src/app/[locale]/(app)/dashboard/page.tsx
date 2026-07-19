@@ -8,6 +8,7 @@ import {
   toRuleWatch,
 } from "@/lib/rule-engine"
 import { TasteProfileBars } from "@/components/taste-profile-bars"
+import { WatchCard, WatchRow } from "@/components/collection/watch-card"
 import { SetupChecklist } from "@/components/onboarding/setup-checklist"
 import { getOnboardingState } from "@/lib/onboarding/queries"
 import { formatMoney } from "@/lib/currency"
@@ -71,6 +72,20 @@ export default async function DashboardPage() {
       : formatMoney(currencyEntries[0][1], currencyEntries[0][0]) +
         (currencyEntries.length > 1 ? " +" : "")
 
+  // Distinct brands across owned pieces.
+  const brandCount = new Set(owned.map((i) => i.watch.brand)).size
+
+  // Average fit score across owned pieces that have one.
+  const fitScores = owned.map((i) => i.fitScore).filter((s): s is number => s != null)
+  const avgFit =
+    fitScores.length > 0
+      ? Math.round(fitScores.reduce((a, b) => a + b, 0) / fitScores.length)
+      : null
+
+  // getCollection returns newest-first, so these are already in the right order.
+  const recentlyAdded = owned.slice(0, 4)
+  const wishlistTop = wishlist.slice(0, 4)
+
   const firstName = user.name?.split(" ")[0]
 
   // ADR 0004 — derived checklist: visible while incomplete and undismissed.
@@ -79,11 +94,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <p className="label-gold-caps mb-2">{t("yourCollection")}</p>
-        <h1 className="font-serif text-4xl font-medium">
-          {t("welcomeBack", { firstName: firstName ?? "" })}
-        </h1>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="label-gold-caps mb-2">{t("yourCollection")}</p>
+          <h1 className="font-serif text-4xl font-medium">
+            {t("welcomeBack", { firstName: firstName ?? "" })}
+          </h1>
+        </div>
+        <Link
+          href="/collection/new"
+          className="shrink-0 inline-flex items-center px-5 py-2.5 bg-primary text-primary-foreground text-[10px] tracking-[0.18em] uppercase font-sans rounded-sm hover:bg-primary/90 transition-colors"
+        >
+          {t("addWatch")}
+        </Link>
       </div>
 
       {showChecklist && (
@@ -95,7 +118,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="rounded-sm border border-border bg-card p-6">
           <p className="label-caps mb-2">{tLabels("watchStatus.owned")}</p>
           <p className="font-serif text-4xl">{owned.length}</p>
@@ -105,6 +128,14 @@ export default async function DashboardPage() {
           <p className="font-serif text-4xl">{wishlist.length}</p>
         </div>
         <div className="rounded-sm border border-border bg-card p-6">
+          <p className="label-caps mb-2">{t("brands")}</p>
+          <p className="font-serif text-4xl">{brandCount}</p>
+        </div>
+        <div className="rounded-sm border border-border bg-card p-6">
+          <p className="label-caps mb-2">{t("avgFit")}</p>
+          <p className="font-serif text-4xl">{avgFit ?? "—"}</p>
+        </div>
+        <div className="rounded-sm border border-border bg-card p-6 col-span-2 md:col-span-1">
           <p className="label-caps mb-2">{t("collectionValue")}</p>
           <p className="font-serif text-4xl">{valueLabel}</p>
         </div>
@@ -160,6 +191,25 @@ export default async function DashboardPage() {
         </div>
         )
       ) : (
+        <>
+        {/* Recently added */}
+        <div>
+          <div className="flex items-baseline justify-between mb-4">
+            <p className="label-gold-caps">{t("recentlyAdded")}</p>
+            <Link
+              href="/collection"
+              className="text-[10px] tracking-[0.18em] uppercase font-sans text-primary hover:opacity-80 transition-opacity"
+            >
+              {t("viewCollection")}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recentlyAdded.map((item) => (
+              <WatchCard key={item.id} item={item} />
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Taste profile */}
           <div className="rounded-sm border border-border bg-card p-6">
@@ -213,6 +263,49 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Wishlist snapshot */}
+        {wishlistTop.length > 0 && (
+          <div className="rounded-sm border border-border bg-card p-6">
+            <div className="flex items-baseline justify-between mb-4">
+              <p className="label-gold-caps">{t("wishlistSnapshot")}</p>
+              <Link
+                href="/wishlist"
+                className="text-[10px] tracking-[0.18em] uppercase font-sans text-primary hover:opacity-80 transition-opacity"
+              >
+                {t("viewWishlist")}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {wishlistTop.map((item) => {
+                const target =
+                  item.targetPrice != null
+                    ? formatMoney(Number(item.targetPrice), item.currency || "EUR")
+                    : null
+                return (
+                  <div key={item.id} className="space-y-1.5">
+                    <WatchRow item={item} />
+                    {(target || item.timeHorizon) && (
+                      <div className="flex items-center gap-3 px-3">
+                        {target && (
+                          <span className="label-caps">
+                            {t("target")}: <span className="text-foreground">{target}</span>
+                          </span>
+                        )}
+                        {item.timeHorizon && (
+                          <span className="label-caps text-primary/70">
+                            {tLabels(`timeHorizon.${item.timeHorizon}`)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   )

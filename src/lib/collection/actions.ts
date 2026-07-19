@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 import { getLocale } from "next-intl/server"
 import { and, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
@@ -8,6 +9,7 @@ import { userWatches, watches } from "@/lib/db/schema"
 import { requireUser } from "@/lib/auth/session"
 import { redirect } from "@/i18n/navigation"
 import { deletePublicImage, publicImageKeyFromUrl } from "@/lib/storage/r2"
+import { RehostError, rehostExternalImages } from "@/lib/images/rehost"
 import { deriveCaseSizeBand, deriveColorFamily } from "./derive"
 import { WatchFormSchema, rawFromFormData, type WatchFormValues } from "./schema"
 import type { ActionState } from "@/lib/definitions"
@@ -22,6 +24,25 @@ async function deleteStoredImages(urls: string[]): Promise<void> {
     } catch (err) {
       console.error("deleteStoredImages error:", err)
     }
+  }
+}
+
+/**
+ * Re-host any external image URLs (URL import prefill or a pasted link) into
+ * our public bucket at save time, so we never persist a hotlink to a retailer
+ * CDN.
+ */
+async function rehostOrError(
+  urls: string[] | undefined,
+  userId: string,
+): Promise<{ urls: string[] } | { error: ActionState }> {
+  try {
+    return { urls: await rehostExternalImages(urls ?? [], userId) }
+  } catch (err) {
+    if (err instanceof RehostError) {
+      return { error: { errors: { imageUrls: [err.message] } } }
+    }
+    throw err
   }
 }
 
@@ -75,6 +96,10 @@ export async function addWatch(
   }
   const v = parsed.data
 
+  const rehosted = await rehostOrError(v.imageUrls, user.id)
+  if ("error" in rehosted) return rehosted.error
+  v.imageUrls = rehosted.urls
+
   const [watch] = await db
     .insert(watches)
     .values(watchValues(v))
@@ -112,6 +137,10 @@ export async function addWishlistItem(
     return { errors: parsed.error.flatten().fieldErrors }
   }
   const v = parsed.data
+
+  const rehosted = await rehostOrError(v.imageUrls, user.id)
+  if ("error" in rehosted) return rehosted.error
+  v.imageUrls = rehosted.urls
 
   const [watch] = await db
     .insert(watches)
@@ -166,6 +195,10 @@ export async function updateWatch(
     return { errors: parsed.error.flatten().fieldErrors }
   }
   const v = parsed.data
+
+  const rehosted = await rehostOrError(v.imageUrls, user.id)
+  if ("error" in rehosted) return rehosted.error
+  v.imageUrls = rehosted.urls
 
   // Clean up R2 objects for photos removed during the edit.
   const [current] = await db
@@ -254,32 +287,43 @@ export async function updateService(
   return { message: "Service details saved." }
 }
 
-export async function deleteWatch(id: string): Promise<void> {
+export async function deleteWatch(
+  id: string
+): Promise<{ error: true } | void> {
   const user = await requireUser()
+  const locale = await getLocale()
 
-  const existing = await db.query.userWatches.findFirst({
-    where: and(eq(userWatches.id, id), eq(userWatches.userId, user.id)),
-    with: { watch: true },
-  })
-  if (!existing) {
-    redirect({ href: "/collection", locale: await getLocale() })
-    return
+  try {
+    const existing = await db.query.userWatches.findFirst({
+      where: and(eq(userWatches.id, id), eq(userWatches.userId, user.id)),
+      with: { watch: true },
+    })
+    if (!existing) {
+      redirect({ href: "/collection", locale })
+      return
+    }
+
+    await db
+      .delete(userWatches)
+      .where(and(eq(userWatches.id, id), eq(userWatches.userId, user.id)))
+
+    // Clean up R2-hosted photos — but only if no other collection item still
+    // references the same catalog row (watches uses onDelete: restrict).
+    const stillReferenced = await db.query.userWatches.findFirst({
+      where: eq(userWatches.watchId, existing.watchId),
+      columns: { id: true },
+    })
+    if (!stillReferenced && existing.watch.imageUrls.length > 0) {
+      await deleteStoredImages(existing.watch.imageUrls)
+    }
+
+    revalidatePath("/collection")
+  } catch (err) {
+    // redirect() signals navigation by throwing — let it propagate.
+    if (isRedirectError(err)) throw err
+    console.error("deleteWatch error:", err)
+    return { error: true }
   }
 
-  await db
-    .delete(userWatches)
-    .where(and(eq(userWatches.id, id), eq(userWatches.userId, user.id)))
-
-  // Clean up R2-hosted photos — but only if no other collection item still
-  // references the same catalog row (watches uses onDelete: restrict).
-  const stillReferenced = await db.query.userWatches.findFirst({
-    where: eq(userWatches.watchId, existing.watchId),
-    columns: { id: true },
-  })
-  if (!stillReferenced && existing.watch.imageUrls.length > 0) {
-    await deleteStoredImages(existing.watch.imageUrls)
-  }
-
-  revalidatePath("/collection")
-  redirect({ href: "/collection", locale: await getLocale() })
+  redirect({ href: "/collection", locale })
 }
