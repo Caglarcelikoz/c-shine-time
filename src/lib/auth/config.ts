@@ -8,8 +8,14 @@ import { checkRateLimit } from "./rate-limit"
 import { clientIpFromHeaders } from "./ip"
 import { EMAIL_UNVERIFIED_ERROR, RATE_LIMITED_ERROR } from "./errors"
 
+/** Valid cost-12 hash of a throwaway string. Compared against when the email has
+ *  no account so both branches pay the same bcrypt cost — otherwise response
+ *  timing reveals whether an account exists. */
+const TIMING_EQUALIZER_HASH =
+  "$2b$12$WnUJoE4dEa8/JeUiKc6aKOO8QAf2.fNxaMYgErIr0ykmOyl/mVAyy"
+
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 }, // 30 days (explicit)
   pages: {
     signIn: "/login",
   },
@@ -40,7 +46,10 @@ export const authOptions: NextAuthOptions = {
           .where(eq(users.email, email))
           .limit(1)
 
-        if (!user) return null
+        if (!user) {
+          await bcrypt.compare(credentials.password, TIMING_EQUALIZER_HASH)
+          return null
+        }
 
         const passwordMatch = await bcrypt.compare(
           credentials.password,

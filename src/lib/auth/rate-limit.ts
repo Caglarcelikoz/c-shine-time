@@ -6,7 +6,9 @@ import { clientIpFromHeaders } from "./ip"
 
 /**
  * Serverless-native rate limiting. Backed by Upstash Redis so counters
- * are shared across invocations. Fails OPEN when Upstash env vars are unset
+ * are shared across invocations. When Upstash env vars are unset this fails
+ * OPEN in development but CLOSED in production — a misconfigured deploy must
+ * never silently disable brute-force protection.
  */
 
 const enabled =
@@ -40,15 +42,23 @@ export async function getClientIp(): Promise<string> {
 }
 
 /**
- * Consume one token for `action` under `identifier`. Returns `{ success }`. When
- * rate limiting is disabled (no Upstash env), always succeeds (fail-open).
+ * Consume one token for `action` under `identifier`. Returns `{ success }`. With
+ * no Upstash env: succeeds in development, fails in production (see module note).
  */
 export async function checkRateLimit(
   action: RateLimitAction,
   identifier: string
 ): Promise<{ success: boolean; retryAfterSeconds?: number }> {
   const limiter = limiters[action]
-  if (!limiter) return { success: true }
+  if (!limiter) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[rate-limit] Upstash env vars unset in production — refusing request (fail-closed)."
+      )
+      return { success: false }
+    }
+    return { success: true }
+  }
 
   const { success, reset } = await limiter.limit(identifier)
   if (success) return { success: true }

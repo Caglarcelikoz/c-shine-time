@@ -1,7 +1,7 @@
 "use server"
 
 import bcrypt from "bcryptjs"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { after } from "next/server"
 import { getLocale } from "next-intl/server"
 import { db } from "@/lib/db"
@@ -22,6 +22,13 @@ import {
   sendResetPasswordEmail,
   sendVerificationEmail,
 } from "@/lib/email/mailer"
+
+function uniqueViolationConstraint(err: unknown): string | null {
+  if (!err || typeof err !== "object") return null
+  const e = err as { code?: string; constraint?: string; cause?: unknown }
+  if (e.code === "23505") return e.constraint ?? ""
+  return uniqueViolationConstraint(e.cause)
+}
 
 export async function register(
   _prevState: ActionState,
@@ -71,10 +78,19 @@ export async function register(
   const passwordHash = await bcrypt.hash(password, 12)
 
   // New signups start unverified (email_verified NULL) — ADR 0007 hard gate.
-  const [created] = await db
-    .insert(users)
-    .values({ name, username, email, passwordHash })
-    .returning({ id: users.id })
+  let created: { id: string } | undefined
+  try {
+    ;[created] = await db
+      .insert(users)
+      .values({ name, username, email, passwordHash })
+      .returning({ id: users.id })
+  } catch (err) {
+    const constraint = uniqueViolationConstraint(err)
+    if (constraint === null) throw err
+    return constraint.includes("username")
+      ? { errors: { username: ["This username is already taken."] } }
+      : { errors: { email: ["An account with this email already exists."] } }
+  }
 
   const locale = await getLocale()
   const token = await issueToken(created!.id, "email_verification")
@@ -165,9 +181,16 @@ export async function resetPassword(
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
+  // Redeeming the emailed token proves mailbox ownership, so it also satisfies
+  // the ADR 0007 verification gate for accounts that never clicked their
+  // verification link.
   await db
     .update(users)
-    .set({ passwordHash, passwordChangedAt: new Date() })
+    .set({
+      passwordHash,
+      passwordChangedAt: new Date(),
+      emailVerified: sql`coalesce(${users.emailVerified}, now())`,
+    })
     .where(eq(users.id, redeemed.userId))
 
   redirect({

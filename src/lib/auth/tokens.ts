@@ -1,6 +1,6 @@
 import "server-only"
 import { randomBytes, createHash } from "node:crypto"
-import { and, eq, gt, isNull } from "drizzle-orm"
+import { and, eq, gt, isNull, lt } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { authTokens } from "@/lib/db/schema"
 
@@ -29,6 +29,12 @@ export async function issueToken(
   const rawToken = randomBytes(32).toString("base64url")
   const tokenHash = hashToken(rawToken)
   const expiresAt = new Date(Date.now() + TTL_MS[type])
+
+  // Opportunistic housekeeping: rows expired over 7 days ago can never be
+  // redeemed again, so purge them here rather than running a separate cron.
+  await db
+    .delete(authTokens)
+    .where(lt(authTokens.expiresAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)))
 
   // Invalidate prior unused tokens of this type so an older link can't be replayed.
   await db

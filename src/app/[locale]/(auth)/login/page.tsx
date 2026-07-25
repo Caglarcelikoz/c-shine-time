@@ -19,6 +19,11 @@ function LoginForm() {
   const registered = searchParams.get("registered")
   const verifySent = searchParams.get("verify") === "sent"
   const resetOk = searchParams.get("reset") === "ok"
+  const rawCallback = searchParams.get("callbackUrl")
+  const callbackUrl =
+    rawCallback?.startsWith("/") && !/^\/[/\\]/.test(rawCallback)
+      ? rawCallback
+      : "/dashboard"
   const [error, setError] = useState<string | null>(null)
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null)
   const [resent, setResent] = useState(false)
@@ -48,7 +53,7 @@ function LoginForm() {
       } else if (result?.error) {
         setError(t("invalidCredentials"))
       } else {
-        router.push("/dashboard")
+        router.push(callbackUrl)
         router.refresh()
       }
     })

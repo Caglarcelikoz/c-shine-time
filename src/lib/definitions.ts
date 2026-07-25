@@ -7,13 +7,15 @@ export const EmailSchema = z
   .trim()
   .toLowerCase()
 
-/** Shared password policy — reused by register and password reset (ADR 0008). */
+/** Shared password policy — reused by register and password reset.
+ *  Never trimmed/transformed: the stored hash must match exactly what the user
+ *  types at login. Max 72 — bcrypt ignores bytes beyond that anyway. */
 export const PasswordSchema = z
   .string()
   .min(8, { error: "Password must be at least 8 characters." })
+  .max(72, { error: "Password must be 72 characters or fewer." })
   .regex(/[a-zA-Z]/, { error: "Password must contain at least one letter." })
   .regex(/[0-9]/, { error: "Password must contain at least one number." })
-  .trim()
 
 export const RegisterSchema = z.object({
   name: z.string().min(2, { error: "Name must be at least 2 characters." }).trim(),
