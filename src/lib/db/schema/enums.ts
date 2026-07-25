@@ -1,5 +1,10 @@
 import { pgEnum } from "drizzle-orm/pg-core"
 
+export const authTokenTypeEnum = pgEnum("auth_token_type", [
+  "password_reset",
+  "email_verification",
+])
+
 export const watchStatusEnum = pgEnum("watch_status", [
   "owned",
   "wishlist",

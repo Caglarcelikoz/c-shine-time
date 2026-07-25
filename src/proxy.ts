@@ -41,6 +41,7 @@ export async function proxy(request: NextRequest) {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   })
+  
   if (!token) {
     const locale = routing.locales.find(
       (l) => request.nextUrl.pathname === `/${l}` || request.nextUrl.pathname.startsWith(`/${l}/`)

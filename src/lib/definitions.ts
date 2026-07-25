@@ -1,5 +1,20 @@
 import { z } from "zod"
 
+/** Shared email field — trimmed and lower-cased so lookups, the unique constraint,
+ *  and rate-limit keys are all case-insensitive. */
+export const EmailSchema = z
+  .email({ error: "Please enter a valid email address." })
+  .trim()
+  .toLowerCase()
+
+/** Shared password policy — reused by register and password reset (ADR 0008). */
+export const PasswordSchema = z
+  .string()
+  .min(8, { error: "Password must be at least 8 characters." })
+  .regex(/[a-zA-Z]/, { error: "Password must contain at least one letter." })
+  .regex(/[0-9]/, { error: "Password must contain at least one number." })
+  .trim()
+
 export const RegisterSchema = z.object({
   name: z.string().min(2, { error: "Name must be at least 2 characters." }).trim(),
   username: z
@@ -10,18 +25,22 @@ export const RegisterSchema = z.object({
       error: "Username can only contain lowercase letters, numbers, hyphens, and underscores.",
     })
     .trim(),
-  email: z.email({ error: "Please enter a valid email address." }).trim(),
-  password: z
-    .string()
-    .min(8, { error: "Password must be at least 8 characters." })
-    .regex(/[a-zA-Z]/, { error: "Password must contain at least one letter." })
-    .regex(/[0-9]/, { error: "Password must contain at least one number." })
-    .trim(),
+  email: EmailSchema,
+  password: PasswordSchema,
 })
 
 export const LoginSchema = z.object({
-  email: z.email({ error: "Please enter a valid email address." }).trim(),
+  email: EmailSchema,
   password: z.string().min(1, { error: "Password is required." }),
+})
+
+export const ForgotPasswordSchema = z.object({
+  email: EmailSchema,
+})
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: PasswordSchema,
 })
 
 export type RegisterInput = z.infer<typeof RegisterSchema>

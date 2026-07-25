@@ -18,6 +18,8 @@ export const users = pgTable("users", {
   hideSoldArchive: boolean("hide_sold_archive").notNull().default(false),
   profileTheme: text("profile_theme").notNull().default("classic"),
   featuredWatchId: text("featured_watch_id"),
+  emailVerified: timestamp("email_verified", { withTimezone: true }),
+  passwordChangedAt: timestamp("password_changed_at", { withTimezone: true }),
   onboardingDismissedAt: timestamp("onboarding_dismissed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

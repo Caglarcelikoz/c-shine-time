@@ -1,5 +1,6 @@
 export * from "./enums"
 export * from "./user"
+export * from "./auth-token"
 export * from "./watch"
 export * from "./user-watch"
 export * from "./document"

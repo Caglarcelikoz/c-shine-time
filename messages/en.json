@@ -456,7 +456,35 @@
     "fullName": "Full name",
     "username": "Username",
     "creatingAccount": "Creating account…",
-    "alreadyHaveAccount": "Already have an account?"
+    "alreadyHaveAccount": "Already have an account?",
+    "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
+    "forgotPassword": "Forgot password?",
+    "verifyEmailSent": "Almost there — check your inbox to confirm your email, then sign in.",
+    "passwordResetOk": "Your password was reset. Sign in with your new password.",
+    "verifyRequired": "Please verify your email before signing in. Check your inbox for the confirmation link.",
+    "verifyResent": "Sent — check your inbox for a fresh confirmation link.",
+    "resendVerification": "Resend confirmation email",
+    "forgotPasswordTitle": "Reset your password",
+    "forgotPasswordSubtitle": "Enter your email and we will send you a reset link.",
+    "forgotPasswordSent": "If an account exists for that email, we have sent a reset link. Check your inbox.",
+    "sending": "Sending…",
+    "sendResetLink": "Send reset link",
+    "backToSignIn": "Back to sign in",
+    "resetPasswordTitle": "Choose a new password",
+    "resetPasswordSubtitle": "Enter a new password for your account.",
+    "newPassword": "New password",
+    "setNewPassword": "Set new password",
+    "resetting": "Saving…",
+    "resetLinkInvalid": "This reset link is missing or invalid.",
+    "resetLinkExpired": "This reset link is invalid or has expired.",
+    "requestNewLink": "Request a new link",
+    "verifyEmailTitle": "Verifying your email",
+    "verifying": "Verifying…",
+    "verifySuccess": "Your email is confirmed. You can now sign in.",
+    "verifyInvalid": "This verification link is invalid or has expired. Sign in to request a new one.",
+    "continueToSignIn": "Continue to sign in",
+    "verifyConfirmPrompt": "Click below to confirm your email address and activate your account.",
+    "confirmEmail": "Confirm my email"
   },
   "Settings": {
     "account": "Account",
@@ -506,8 +534,14 @@
         "label": "Ivory",
         "description": "Light parchment, editorial serif."
       },
-      "noir": { "label": "Noir", "description": "Deep black, silver accents." },
-      "navy": { "label": "Navy", "description": "Deep navy with brass." }
+      "noir": {
+        "label": "Noir",
+        "description": "Deep black, silver accents."
+      },
+      "navy": {
+        "label": "Navy",
+        "description": "Deep navy with brass."
+      }
     }
   },
   "Nav": {

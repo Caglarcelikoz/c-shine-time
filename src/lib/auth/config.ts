@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
+import { checkRateLimit } from "./rate-limit"
+import { clientIpFromHeaders } from "./ip"
+import { EMAIL_UNVERIFIED_ERROR, RATE_LIMITED_ERROR } from "./errors"
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -17,13 +20,24 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null
+
+        const email = credentials.email.trim().toLowerCase()
+
+        const ip = clientIpFromHeaders(req?.headers)
+        const [ipOk, emailOk] = await Promise.all([
+          checkRateLimit("login", `ip:${ip}`),
+          checkRateLimit("login", `email:${email}`),
+        ])
+        if (!ipOk.success || !emailOk.success) {
+          throw new Error(RATE_LIMITED_ERROR)
+        }
 
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email))
+          .where(eq(users.email, email))
           .limit(1)
 
         if (!user) return null
@@ -33,6 +47,10 @@ export const authOptions: NextAuthOptions = {
           user.passwordHash
         )
         if (!passwordMatch) return null
+
+        if (!user.emailVerified) {
+          throw new Error(EMAIL_UNVERIFIED_ERROR)
+        }
 
         return {
           id: user.id,
@@ -48,12 +66,26 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.username = ((user as { username?: string }).username ?? "")
-        token.avatar = ((user as { avatar?: string | null }).avatar ?? null)
+        token.username = (user as { username?: string }).username ?? ""
+        token.avatar = (user as { avatar?: string | null }).avatar ?? null
       }
       return token
     },
     async session({ session, token }) {
+      const iatMs = typeof token.iat === "number" ? token.iat * 1000 : 0
+      if (token.id) {
+        const [row] = await db
+          .select({ passwordChangedAt: users.passwordChangedAt })
+          .from(users)
+          .where(eq(users.id, token.id as string))
+          .limit(1)
+        const cutoff = row?.passwordChangedAt?.getTime() ?? 0
+        const staleOrUnprovable = cutoff > 0 && (iatMs === 0 || iatMs < cutoff)
+        if (!row || staleOrUnprovable) {
+          return { ...session, user: undefined as never, expires: session.expires }
+        }
+      }
+
       if (token) {
         session.user.id = token.id as string
         session.user.username = token.username as string
