@@ -458,6 +458,7 @@
     "creatingAccount": "Bezig met account aanmaken…",
     "alreadyHaveAccount": "Heb je al een account?",
     "tooManyAttempts": "Te veel pogingen. Wacht even en probeer het opnieuw.",
+    "serviceUnavailable": "Er is iets misgegaan aan onze kant. Je wachtwoord is in orde — probeer het zo meteen opnieuw.",
     "forgotPassword": "Wachtwoord vergeten?",
     "verifyEmailSent": "Bijna klaar — controleer je inbox om je e-mail te bevestigen en log daarna in.",
     "passwordResetOk": "Je wachtwoord is opnieuw ingesteld. Log in met je nieuwe wachtwoord.",

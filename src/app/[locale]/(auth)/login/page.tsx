@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/i18n/navigation"
-import { EMAIL_UNVERIFIED_ERROR, RATE_LIMITED_ERROR } from "@/lib/auth/errors"
+import {
+  EMAIL_UNVERIFIED_ERROR,
+  RATE_LIMITED_ERROR,
+  SERVICE_UNAVAILABLE_ERROR,
+} from "@/lib/auth/errors"
 import { resendVerification } from "@/lib/auth/actions"
 
 function LoginForm() {
@@ -50,8 +54,14 @@ function LoginForm() {
         setUnverifiedEmail(email)
       } else if (result?.error === RATE_LIMITED_ERROR) {
         setError(t("tooManyAttempts"))
-      } else if (result?.error) {
+      } else if (result?.error === SERVICE_UNAVAILABLE_ERROR) {
+        setError(t("serviceUnavailable"))
+      } else if (result?.error === "CredentialsSignin") {
         setError(t("invalidCredentials"))
+      } else if (result?.error) {
+        // Anything else is a fault on our side, not a wrong password.
+        console.error("[login] unexpected auth error:", result.error)
+        setError(t("serviceUnavailable"))
       } else {
         router.push(callbackUrl)
         router.refresh()

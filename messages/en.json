@@ -458,6 +458,7 @@
     "creatingAccount": "Creating account…",
     "alreadyHaveAccount": "Already have an account?",
     "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
+    "serviceUnavailable": "Something went wrong on our end. Your password is fine — please try again in a moment.",
     "forgotPassword": "Forgot password?",
     "verifyEmailSent": "Almost there — check your inbox to confirm your email, then sign in.",
     "passwordResetOk": "Your password was reset. Sign in with your new password.",

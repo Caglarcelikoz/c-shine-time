@@ -66,7 +66,7 @@ export async function GET() {
   const pdfBytes = await buildInsurancePdf(user.name, items);
 
   const date = new Date().toISOString().slice(0, 10);
-  return new Response(pdfBytes, {
+  return new Response(pdfBytes.buffer as ArrayBuffer, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

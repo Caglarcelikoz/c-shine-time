@@ -6,7 +6,11 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { checkRateLimit } from "./rate-limit"
 import { clientIpFromHeaders } from "./ip"
-import { EMAIL_UNVERIFIED_ERROR, RATE_LIMITED_ERROR } from "./errors"
+import {
+  EMAIL_UNVERIFIED_ERROR,
+  RATE_LIMITED_ERROR,
+  SERVICE_UNAVAILABLE_ERROR,
+} from "./errors"
 
 /** Valid cost-12 hash of a throwaway string. Compared against when the email has
  *  no account so both branches pay the same bcrypt cost — otherwise response
@@ -40,11 +44,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error(RATE_LIMITED_ERROR)
         }
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1)
+        let user: typeof users.$inferSelect | undefined
+        try {
+          ;[user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1)
+        } catch (err) {
+          console.error("[auth] user lookup failed:", err)
+          throw new Error(SERVICE_UNAVAILABLE_ERROR)
+        }
 
         if (!user) {
           await bcrypt.compare(credentials.password, TIMING_EQUALIZER_HASH)

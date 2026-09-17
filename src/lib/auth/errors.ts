@@ -9,3 +9,8 @@ export const EMAIL_UNVERIFIED_ERROR = "EMAIL_UNVERIFIED"
 
 /** Login rate limit exceeded. */
 export const RATE_LIMITED_ERROR = "RATE_LIMITED"
+
+/** Login couldn't be evaluated (rate-limit backend or database unreachable).
+ *  Distinct from bad credentials: telling a user their password is wrong when
+ *  the real fault is infrastructure sends them resetting a password that works. */
+export const SERVICE_UNAVAILABLE_ERROR = "SERVICE_UNAVAILABLE"
