@@ -35,6 +35,11 @@ interface AddWatchFlowProps {
   action: FormAction
   imageUploadEnabled: boolean
   aiImportEnabled: boolean
+  /** Owned collection vs. wishlist — switches the form's wishlist-only fields. */
+  variant?: "owned" | "wishlist"
+  /** Defaults to the collection's label/route; the wishlist passes its own. */
+  submitLabel?: string
+  cancelHref?: string
 }
 
 /**
@@ -110,11 +115,18 @@ function EnrichmentStepLoader() {
  * Photo-first add flow (ADR 0001): snap up to 3 photos → vision extraction
  * pre-fills the same manual form → user reviews and saves. Extraction is an
  * accelerator, never a gate.
+ *
+ * Shared by the collection and the wishlist: both add the same watch specs and
+ * differ only in the action they post to and the wishlist-only fields, so the
+ * import paths (photo + URL) are identical for each.
  */
 export function AddWatchFlow({
   action,
   imageUploadEnabled,
   aiImportEnabled,
+  variant = "owned",
+  submitLabel,
+  cancelHref,
 }: AddWatchFlowProps) {
   const t = useTranslations("AddWatchFlow")
 
@@ -400,8 +412,9 @@ export function AddWatchFlow({
             key={formKey}
             action={action}
             defaultValues={prefill ?? undefined}
-            submitLabel={t("addToCollection")}
-            cancelHref="/collection"
+            variant={variant}
+            submitLabel={submitLabel ?? t("addToCollection")}
+            cancelHref={cancelHref ?? "/collection"}
             imageUploadEnabled={imageUploadEnabled}
           />
         </>
